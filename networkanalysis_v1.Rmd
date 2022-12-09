@@ -1,0 +1,145 @@
+---
+title: "R Notebook"
+output: html_notebook
+---
+
+```{r}
+library(igraph)
+```
+
+```{r}
+```
+
+
+```{r}
+csc = read.csv("csc_2018_2021_halfsns.csv")
+ggw = read.csv("ggw_2018_2021_sns.csv")
+cw = read.csv("cw_2018_2021_sns.csv")
+```
+
+
+
+```{r}
+#rename the columns
+colnames(ggw)[colnames(ggw) == 'Source'] <- 'from'
+colnames(ggw)[colnames(ggw) == 'Target'] <- 'to'
+
+colnames(csc)[colnames(csc) == 'Source'] <- 'from'
+colnames(csc)[colnames(csc) == 'Target'] <- 'to'
+
+colnames(cw)[colnames(cw) == 'Source'] <- 'from'
+colnames(cw)[colnames(cw) == 'Target'] <- 'to'
+```
+
+
+```{r}
+nx <- data.frame(ggw['from'], ggw['to'], ggw['Weight'])
+g <- graph.data.frame(nx, directed=TRUE)
+
+
+nx1 <- data.frame(cw['from'], cw['to'], cw['Weight'])
+g1 <- graph.data.frame(nx1, directed=TRUE)
+
+nx2 <- data.frame(csc['from'],csc['to'], csc['Weight'])
+g2 <- graph.data.frame(nx2, directed=TRUE)
+#class(g2)
+```
+
+
+```{r}
+deg<-degree(g2,mode="all")
+V(g2)$size <- degree(g2)*0.3
+E(g2)$arrow.size <- .3
+E(g2)$edge.color <- "gray80"
+E(g2)$weight <- 1+E(g2)$weight/12
+l=layout.fruchterman.reingold(g2)
+plot(g2,
+  vertex.label=NA,
+  layout=l)
+
+```
+```{r}
+edge_density(g)
+```
+
+
+```{r}
+frame <- as.data.frame(constraint(g, nodes = V(g), weights = NULL))
+names(frame) <- "Constraint value"
+#compute mean
+new_vector <- unlist(frame, use.names = FALSE)
+new_vector <- new_vector[new_vector != 1]
+mean(new_vector)
+
+
+frame <- as.data.frame(constraint(g1, nodes = V(g1), weights = NULL))
+names(frame) <- "Constraint value"
+#compute mean
+new_vector1 <- unlist(frame, use.names = FALSE)
+new_vector1 <- new_vector1[new_vector1 != 1]
+mean(new_vector1)
+
+frame <- as.data.frame(constraint(g2, nodes = V(g2), weights = NULL))
+names(frame) <- "Constraint value"
+#compute mean
+new_vector2 <- unlist(frame, use.names = FALSE)
+new_vector2 <- new_vector2[new_vector2 != 1]
+mean(new_vector2)
+
+
+```
+```{r}
+reciprocity(g)
+reciprocity(g1)
+reciprocity(g2)
+```
+
+```{r}
+assortativity_degree(g, directed=TRUE)
+assortativity_degree(g1, directed=TRUE)
+assortativity_degree(g2, directed=TRUE)
+```
+
+```{r}
+deg <- degree(g)
+tmax <- centr_degree_tmax(g, loops=FALSE)
+centralize(deg, tmax)
+centr_eigen(g)$centralization
+```
+```{r}
+transitivity(g)
+transitivity(g1)
+transitivity(g2)
+```
+```{r}
+dd1 <- degree_distribution(g)
+dd2 <- degree_distribution(g1)
+dd3 <- degree_distribution(g2)
+par(mfrow = c(1, 3))
+plot(dd1,col = 'red', ylab ='ccdf degree (gw)')
+plot(dd2,col = 'blue', ylab ='ccdf degree (cw)')
+plot(dd3,col = 'green', ylab ='ccdf degree (csc)')
+```
+
+```{r}
+ego.effective.size <- function(g, ego, mode='all') {
+  egonet <- induced.subgraph(g, neighbors(g, ego, mode))
+  n <- vcount(egonet)
+  t <- ecount(egonet)
+  return(n - (2 * t) / n)
+}
+effective.size <- function(g, ego=NULL, mode="all") {
+  if(!is.null(ego)) {
+    return(ego.effective.size(g, ego, mode))
+  }
+  return (sapply(V(g), function(x) {ego.effective.size(g,x)}))
+}
+```
+
+
+```{r}
+mean(unlist(effective.size(g)))
+mean(unlist(effective.size(g1)))
+mean(unlist(effective.size(g2)))
+```
+

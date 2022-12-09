@@ -1,0 +1,417 @@
+---
+title: "R Notebook"
+output: html_notebook
+---
+
+
+```{r}
+setwd("C:/Users/Sree/Desktop/Proposal_writeup/Dissertation/Analysis/LIWC")
+```
+
+```{r}
+data <- read.csv("data_liwc.csv")
+```
+
+```{r}
+colnames(data)[1] <- 'subreddit'
+```
+
+```{r}
+
+
+```
+
+
+```{r}
+
+```
+
+```{r}
+data_subset <- data.frame(data['Tone'], data['subreddit'], data['WC'], data['Analytic'], data['Authentic'], data['Clout'])
+```
+
+```{r}
+
+```
+
+```{r}
+#png(file="boxplot_LIWCmain.png")
+par(mfrow=c(2,2))  
+boxplot(unlist(log(data_subset['Tone']))~unlist(data_subset['subreddit']), xlab='subreddit', ylab='Tone')
+
+boxplot(unlist(data_subset['Clout'])~unlist(data_subset['subreddit']), xlab='subreddit', ylab='clout')
+
+boxplot(unlist(data_subset['Authentic'])~unlist(data_subset['subreddit']), xlab='subreddit', ylab='Authentic')
+
+boxplot(unlist(data_subset['Analytic'])~unlist(data_subset['subreddit']), xlab='subreddit', ylab='Analytic')
+
+#boxplot(unlist(data_subset['WC'])~unlist(data_subset['subreddit']), xlab='subreddit', ylab='Word count')
+```
+
+
+```{r}
+ggw <- data[data$subreddit=='ggw',1:111]
+csc <- data[data$subreddit=='csc',1:111]
+cw <- data[data$subreddit == 'cw',1:111]
+```
+
+```{r}
+qqnorm(unlist(ggw['Clout']))
+qqline(unlist(ggw['Clout']))
+qqnorm(unlist(ggw['Authentic']))
+qqline(unlist(ggw['Authentic']))
+qqnorm(unlist(ggw['Tone']))
+qqline(unlist(ggw['Tone']))
+qqnorm(unlist(ggw['Analytic']))
+qqline(unlist(ggw['Analytic']))
+```
+
+```{r}
+qqnorm(unlist(cw['Clout']))
+qqline(unlist(cw['Clout']))
+qqnorm(unlist(cw['Authentic']))
+qqline(unlist(cw['Authentic']))
+qqnorm(unlist(cw['Tone']))
+qqline(unlist(cw['Tone']))
+qqnorm(unlist(cw['Analytic']))
+qqline(unlist(cw['Analytic']))
+
+```
+```{r}
+qqnorm(unlist(csc['Clout'])))
+qqline(unlist(csc['Clout'])))
+qqnorm(unlist(csc['Authentic']))
+qqline(unlist(csc['Authentic']))
+qqnorm(unlist(csc['Tone']))
+qqline(unlist(csc['Tone']))
+qqnorm(unlist(csc['Analytic']))
+qqline(unlist(csc['Analytic']))
+
+```
+```{r}
+# run a bunch of t-tests:
+#ggw vs csc 
+t.test(ggw['Clout'], csc['Clout'], var.equal = FALSE)
+t.test(ggw['Tone'], csc['Tone'], var.equal = FALSE)
+t.test(ggw['Authentic'], csc['Authentic'], var.equal = FALSE)
+t.test(ggw['Analytic'], csc['Analytic'], var.equal = FALSE)
+```
+
+```{r}
+#cw vs csc
+t.test(cw['Clout'], csc['Clout'], var.equal = FALSE)
+t.test(cw['Tone'], csc['Tone'], var.equal = FALSE)
+t.test(cw['Authentic'], csc['Authentic'], var.equal = FALSE)
+t.test(cw['Analytic'], csc['Analytic'], var.equal = FALSE)
+```
+
+```{r}
+#cw vs ggw
+t.test(cw['Clout'], ggw['Clout'], var.equal = FALSE)
+t.test(cw['Tone'], ggw['Tone'], var.equal = FALSE)
+t.test(cw['Authentic'], ggw['Authentic'], var.equal = FALSE)
+t.test(cw['Analytic'], ggw['Analytic'], var.equal = FALSE)
+
+```
+
+```{r}
+csc[,2:111] <-sqrt(csc[,2:111])
+qqnorm(unlist(csc['Clout']))
+qqline(unlist(csc['Clout']))
+```
+
+```{r}
+data_logit <- read.csv("data_liwc.csv")
+```
+
+
+```{r}
+colnames(data_logit)[1] <- 'subreddit'
+```
+
+```{r}
+data_logit$subreddit <- as.factor(data_logit$subreddit)
+#summary(data_logit)
+```
+
+```{r}
+library(mlogit)
+mlogitdata <- mlogit.data(data_logit, choice = 'subreddit', shape = 'wide')
+```
+
+```{r}
+model <- mlogit(subreddit~1|WC+pronoun+article+affiliation+achieve+power+Cognition+certitude+Social+socbehav+prosocial+polite+conflict+moral+comm+socrefs+female+male+tech+work+money+wellness+fatigue+reward+risk+curiosity+Perception+focuspast + focuspresent + focusfuture + filler + emo_pos + emo_anx + emo_sad + emo_anger, data=mlogitdata, reflevel='csc')
+```
+
+
+```{r}
+model <- mlogit(subreddit~1|WC+Clout+Analytic+Tone+Authentic+Social+Cognition+male+tech+Perception+Affect+emotion+achieve+affiliation, data=mlogitdata, reflevel='csc')
+```
+
+
+```{r}
+m <- mlogit(subreddit ~ 1 | WC + Analytic + Clout + Authentic + Tone + pronoun + article + affiliation + achieve + power + cogproc + insight+ cause+ certitude + affect + emo_pos + emo_neg + emo_sad+emo_anx+emo_anger +  swear + Social + socbehav + prosocial + polite + conflict + moral + comm + socrefs + family + friend + female + male + tech + work + money + wellness + mental + substances + fatigue + reward + risk + curiosity + Perception, data = mlogitdata, reflevel = 'csc')
+```
+
+
+
+```{r}
+w_data <- data_logit[!data_logit$subreddit=='csc',]
+w_data$subreddit <- as.factor(w_data$subreddit)
+```
+
+```{r}
+w_data <- transform(w_data,out=ifelse(subreddit=='cw',0,1))
+w_data$out <- as.factor(w_data$out)
+```
+
+```{r}
+#trying some sampling
+## rows that have "z" and "zz" entries
+cw_ind <- which(w_data$subreddit == "cw")
+ggw_ind <- which(w_data$subreddit == "ggw")
+
+#nsamp <- 10   #number of elements to sample
+## if you want all elements of the smaller class, could be:
+nsamp <- min(length(cw_ind), length(ggw_ind))
+
+## select `nsamp` entries with "z" and `nsamp` entries with "zz"
+pick_cw <- sample(cw_ind, nsamp)
+pick_ggw <- sample(ggw_ind, nsamp)
+
+new_data <- w_data[c(pick_cw, pick_ggw), ]
+
+```
+
+```{r}
+correlationMatrix <- cor(new_data[,2:111], use="pairwise.complete.obs")
+library(caret)
+highlyCorrelated <- findCorrelation(correlationMatrix, cutoff=0.7)
+new_data_y <- new_data[,1] 
+new_data <- new_data[,2:111]
+new_data <- new_data[-highlyCorrelated]
+
+```
+```{r}
+new_data <- cbind(new_data_y, new_data)
+colnames(new_data)[1]<-'subreddit'
+```
+
+```{r}
+w_model <- glm(subreddit~WC+Analytic+Clout+Authentic+Tone+WPS+BigWords+Dic+Linguistic+function.+pronoun+ppron+i+we+you+shehe+they+ipron+det+article+number+prep+auxverb+adverb+conj+negate+verb+adj+quantity+Drives+affiliation+achieve+power+Cognition+allnone+cogproc+insight+cause+discrep+tentat+certitude+differ+memory+Affect+tone_pos+tone_neg+emotion+emo_pos+emo_neg+emo_anx+emo_anger+emo_sad+swear+Social+socbehav+prosocial+polite+conflict+moral+comm+socrefs+family+friend+female+male+Culture+politic+ethnicity+tech+Lifestyle+leisure+home+work+money+relig+Physical+health+illness+wellness+mental+substances+sexual+food+death+need+want+acquire+lack+fulfill+fatigue+reward+risk+curiosity+allure+Perception+attention+motion+space+visual+auditory+feeling+time+focuspast+focuspresent+focusfuture+Conversation+netspeak+assent+nonflu+filler, family=binomial(link="logit"), data=new_data)
+```
+
+
+```{r}
+#final logit model
+w_model <- glm(subreddit~pronoun+ppron+i+we+you+shehe+they+article+number+prep+auxverb+adverb+conj+verb+adj+Drives+affiliation+achieve+power+Cognition+allnone+cogproc+insight+cause+discrep+tentat+certitude+differ+memory+Affect+tone_pos+tone_neg+emotion+emo_pos+emo_neg+emo_anx+emo_anger+emo_sad+swear+Social+socbehav+prosocial+polite+conflict+moral+comm+socrefs+family+friend+female+male+Culture+politic+ethnicity+tech+Lifestyle+leisure+home+work+money+relig+Physical+health+illness+wellness+mental+substances+sexual+food+death+need+want+acquire+lack+fulfill+fatigue+reward+risk+curiosity+allure+Perception+attention+motion+space+visual+auditory+feeling+time+focuspast+focuspresent+focusfuture+Conversation+netspeak+assent+nonflu+filler, family=binomial(link="logit"), data=new_data)
+
+```
+
+```{r}
+w_model <- glm(subreddit~WC+Analytic+Clout+Authentic+Tone+WPS+BigWords+Dic+ppron+i+we+you+shehe+they+article+number+prep+auxverb+adverb+conj+verb+adj+affiliation+achieve+power+cogproc+insight+cause+discrep+tentat+certitude+differ+memory+tone_pos+emo_pos+emo_neg+emo_anx+emo_anger+emo_sad+swear+conflict+moral+comm+family+friend+female+male+politic+ethnicity+tech+leisure+home+work+money+relig+health+illness+wellness+mental+substances+sexual+food+death+need+want+acquire+lack+fulfill+fatigue+reward+risk+allure+attention+motion+space+visual+auditory+feeling+time+focuspast+focuspresent+focusfuture+netspeak+assent+nonflu+filler,data = new_data)
+
+```
+
+```{r}
+w_model <- glm(subreddit~Cognition+allnone+cogproc+insight+cause+discrep+tentat+certitude+differ+memory+Affect+tone_pos+tone_neg+emotion+emo_pos+emo_neg+emo_anx+emo_anger+emo_sad+swear+Social+socbehav+prosocial+polite+conflict+moral+comm+socrefs+family+friend+female+male+Culture+politic+ethnicity+tech+Lifestyle+leisure+home+work+money+relig+Physical+health+illness+wellness+mental+substances+sexual+food+death+need+want+acquire+lack+fulfill+fatigue+reward+risk+curiosity+allure+Perception+attention+motion+space+visual+auditory+feeling+time+focuspast+focuspresent+focusfuture+Conversation+netspeak+assent+nonflu+filler, family=binomial(link="logit"), data=new_data)
+```
+
+```{r}
+w_model <- glm(subreddit~we+you+shehe+they+affiliation+Affect+assent+home+ family+friend+prosocial+socbehav+feeling+Perception+ppron+emo_pos+leisure+relig+achieve+work+money+acquire+motion+focuspresent+time+discrep+insight+certitude+cogproc+moral,family=binomial(link="logit"), data=new_data)
+```
+
+```{r}
+summary(w_model)
+
+```
+
+```{r}
+predicted <- predict(w_model, new_data, type="response")
+predicted <- ifelse(predicted > 0.5, 'ggw', 'cw')
+library(caret)
+confusionMatrix(factor(predicted),factor(new_data$subreddit))
+```
+
+
+```{R}
+#trying some sampling
+## rows that have "z" and "zz" entries
+csc_ind <- which(data_logit$subreddit == "csc")
+ggw_ind <- which(data_logit$subreddit == "cw")
+
+#nsamp <- 10   #number of elements to sample
+## if you want all elements of the smaller class, could be:
+nsamp <- min(length(csc_ind), length(ggw_ind))
+
+## select `nsamp` entries with "z" and `nsamp` entries with "zz"
+pick_csc <- sample(csc_ind, nsamp)
+pick_ggw <- sample(ggw_ind, nsamp)
+
+new_data <- data_logit[c(pick_csc, pick_ggw), ]
+#new_data <- new_data[1:111,]
+```
+
+
+```{r}
+
+```
+
+```{r}
+correlationMatrix <- cor(new_data[,2:111], use="pairwise.complete.obs")
+library(caret)
+highlyCorrelated <- findCorrelation(correlationMatrix, cutoff=0.6)
+new_data_y <- new_data[,1] 
+new_data <- new_data[,2:111]
+new_data <- new_data[-highlyCorrelated]
+new_data <- cbind(new_data_y, new_data)
+colnames(new_data)[1]<-'subreddit'
+```
+
+```{r}
+new_data[,2:111] <- log(new_data[,2:111])
+csc_ggw_model <- glm(subreddit~WC+Analytic+Clout+Authentic+Tone, family=binomial(link="logit"), data=new_data)
+```
+
+
+```{r}
+summary(csc_ggw_model)
+```
+
+
+```{r}
+#trying some sampling
+## rows that have "z" and "zz" entries
+csc_ind <- which(data_logit$subreddit == "csc")
+ggw_ind <- which(data_logit$subreddit == "ggw")
+cw_ind <- which(data_logit$subreddit == "cw")
+#nsamp <- 10   #number of elements to sample
+## if you want all elements of the smaller class, could be:
+nsamp <- min(length(csc_ind), length(ggw_ind), length(cw_ind))
+
+## select `nsamp` entries with "z" and `nsamp` entries with "zz"
+pick_csc <- sample(csc_ind, nsamp+1000)
+pick_ggw <- sample(ggw_ind, nsamp+100)
+pick_cw1 <- sample(cw_ind, nsamp)
+pick_cw2 <- sample(cw_ind, nsamp)
+pick_cw3 <- sample(cw_ind, nsamp)
+new_data <- data_logit[c(pick_csc, pick_cw, pick_cw1, pick_cw2, pick_cw3, pick_ggw), ]
+```
+
+```{r}
+correlationMatrix <- cor(new_data[,2:111], use="pairwise.complete.obs")
+library(caret)
+highlyCorrelated <- findCorrelation(correlationMatrix, cutoff=0.6)
+new_data_y <- new_data[,1] 
+new_data <- new_data[,2:111]
+new_data <- new_data[-highlyCorrelated]
+new_data <- cbind(new_data_y, new_data)
+colnames(new_data)[1]<-'subreddit'
+
+```
+
+
+```{r}
+library(mlogit)
+mlogitdata <- mlogit.data(data_logit, choice = 'subreddit', shape = 'wide')
+```
+
+
+```{r}
+m <- mlogit(subreddit ~1| WC+Analytic+Clout+Authentic+Tone+pronoun+ppron+Drives+affiliation+achieve+power+Cognition+tentat+certitude+emo_sad+emo_anx+Social+socbehav+prosocial+polite+conflict+moral+comm+socrefs+female+male+tech+fatigue+reward+risk+curiosity+allure+Perception, data = mlogitdata, reflevel = 'csc')
+```
+
+```{r}
+
+m <- mlogit(subreddit~1|we+you+shehe+they+affiliation+Affect+assent+home+ family+friend+prosocial+socbehav+feeling+Perception+ppron+emo_pos+leisure+relig+achieve+work+money+acquire+motion+focuspresent+time+discrep+insight+certitude+cogproc+moral, data = mlogitdata, reflevel = 'csc') 
+```
+
+
+```{r}
+m <- mlogit(subreddit~1|WC+Analytic+Clout+Authentic+Tone, data = mlogitdata, reflevel = 'csc') 
+```
+
+
+```{r}
+m <- mlogit(subreddit~1|allnone+cogproc+insight+cause+discrep+tentat+certitude+differ+memory+tone_pos+tone_neg+emo_pos+emo_neg+emo_anx+emo_anger+emo_sad+swear+prosocial+polite+conflict+moral+comm+socrefs+tech+need+want+acquire+lack+fulfill+fatigue+reward+risk+curiosity+focuspast+focuspresent+assent+nonflu+filler,data = mlogitdata, reflevel = 'csc')
+```
+
+```{r}
+m <- mlogit(subreddit~1|allnone+cogproc+insight+cause+discrep+tentat+certitude+differ+memory+tone_pos+tone_neg+emo_pos+emo_neg+emo_anx+emo_anger+emo_sad+swear+prosocial+polite+conflict+moral+comm+family+friend+female+male+tech+need+want+acquire+lack+fulfill+fatigue+reward+risk+curiosity+focuspast+focuspresent+assent+nonflu+filler,data = mlogitdata, reflevel = 'csc')
+```
+
+```{r}
+#final mlogit model
+m <- mlogit(subreddit~1|cogproc+insight+discrep+tentat+certitude+emo_anx+emo_anger+emo_sad+swear+prosocial+moral+comm+male+tech+leisure+money+work+fatigue+reward+risk+curiosity+attention+motion+focuspast+focuspresent+netspeak,data = mlogitdata, reflevel = 'csc')
+```
+
+```{r}
+#some code to check for confusion matrix [might not be entirely correct :(]
+correct <- m$probabilities
+predict <- colnames(correct)[apply(correct, 1, which.max)]
+table(predict)
+fin_correct <- data_logit[1:400015,]
+summ <- table(fin_correct$subreddit, predict)
+ + 
+```
+
+
+```{r}
+w_model <- glm(subreddit~we+you+shehe+they+affiliation+Affect+assent+home+ family+friend+prosocial+feeling+Perception+ppron+emo_pos+leisure+relig+Social+sexual+i+auxverb+achieve+work+money+acquire+motion+focuspresent+time+discrep+insight+certitude+cogproc+moral,family=binomial(link="logit"), data=new_data)
+```
+
+
+```{r}
+correlationMatrix <- cor(new_data[,2:111], use="pairwise.complete.obs")
+library(caret)
+highlyCorrelated <- findCorrelation(correlationMatrix, cutoff=0.6)
+new_data_y <- new_data[,1] 
+new_data <- new_data[,2:111]
+new_data <- new_data[-highlyCorrelated]
+new_data <- cbind(new_data_y, new_data)
+colnames(new_data)[1]<-'subreddit'
+```
+
+
+```{r}
+
+#generate plots for cluster data
+# Create data for the graph.
+x1 <-  c(37, 28,10,21)
+labels1 <-  c("Communal champions","Communal pivots","Self directed Agents","Resource managers")
+
+piepercent1<- round(100*x1/sum(x1), 1)
+
+x2 <-  c(185, 148, 93, 72)
+labels2 <-  c("Communal champions","Communal pivots","Self directed Agents","Resource managers")
+
+piepercent2<- round(100*x2/sum(x2), 1)
+
+x3 <-  c(2050, 4045, 4588, 3410)
+labels3 <-   c("Communal champions","Communal pivots","Self directed Agents","Resource managers")
+
+
+piepercent3<- round(100*x3/sum(x3), 1)
+
+# Give the chart file a name.
+#png(file = "cw_cluster.jpg")
+
+# Plot the chart.
+pie(x1, labels = c("38.5%","29.2%", "10.4%", "21.9%"), main = "CW pie chart",col = rainbow(length(x1)))
+legend("topright",c("Communal champions","Communal pivots","Self directed Agents","Resource managers") , cex = 0.8, fill = rainbow(length(x1)))
+   
+pie(x2, labels = c("37.1%","29.7%", "18.7%", "14.5%"), main = "GGW pie chart",col = rainbow(length(x2)))
+legend("topright", c("Communal champions","Communal pivots","Self directed Agents","Resource managers"), cex = 0.8,
+        fill = rainbow(length(x2)))
+         
+pie(x3, labels = c("14.5%","28.7%", "32.6%", "24.2%"), main = "CSC pie chart",col = rainbow(length(x3)))
+legend("topright", c("Communal champions","Communal pivots","Self directed Agents","Resource managers"), cex = 0.8,
+        fill = rainbow(length(x3)))
+```
+
+```{r}
+#trying to do some weighting
+
+```
+
+
