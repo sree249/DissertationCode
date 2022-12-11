@@ -1,5 +1,5 @@
 # DissertationCode
-Scripts for data collection and analysis for Subhasree Sengupta Dissertation.
+Scripts for data collection and analysis for Subhasree Sengupta's Dissertation.
 
 Copyright @ Subhasree Sengupta
 
