@@ -7,7 +7,7 @@ Code use and modifications need permission of the author.
 
 ## Author contact and contribution requirements: 
 
-Primary email: susengup@syr.edu
+Primary email: subhass@g.clemson.edu & susengup@syr.edu
 
 ### This project is licensed under the terms of the MIT license.
 
